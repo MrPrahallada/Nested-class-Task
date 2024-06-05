@@ -1,0 +1,174 @@
+public class Contact {
+    private String name;
+    private NameContactInfo nameContactInfo;
+    private Email[] emails = new Email[3];
+    private Social[] socials = new Social[5];
+    private ContactInfo phoneNumber;
+    private int emailCount = 0;
+    private int socialCount = 0;
+
+    public Contact(String name) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        this.name = name;
+        this.nameContactInfo = new NameContactInfo();
+    }
+
+    public void rename(String newName) {
+        if (newName == null || newName.isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        this.name = newName;
+    }
+
+    public ContactInfo addEmail(String localPart, String domain) {
+        if (emailCount < 3) {
+            Email email = new Email(localPart + "@" + domain);
+            emails[emailCount++] = email;
+            return email;
+        }
+        return null;
+    }
+
+    public ContactInfo addEpamEmail(String firstname, String lastname) {
+        if (emailCount < 3) {
+            Email epamEmail = new Email(firstname + "_" + lastname + "@epam.com") {
+                @Override
+                public String getTitle() {
+                    return "Epam Email";
+                }
+            };
+            emails[emailCount++] = epamEmail;
+            return epamEmail;
+        }
+        return null;
+    }
+
+    public ContactInfo addPhoneNumber(int code, String number) {
+        if (this.phoneNumber == null) {
+            this.phoneNumber = new ContactInfo() {
+                @Override
+                public String getTitle() {
+                    return "Tel";
+                }
+
+                @Override
+                public String getValue() {
+                    return "+" + code + " " + number;
+                }
+            };
+            return this.phoneNumber;
+        }
+        return null;
+    }
+
+    public ContactInfo addTwitter(String twitterId) {
+        return addSocialMedia("Twitter", twitterId);
+    }
+
+    public ContactInfo addInstagram(String instagramId) {
+        return addSocialMedia("Instagram", instagramId);
+    }
+
+    public ContactInfo addSocialMedia(String title, String id) {
+        if (socialCount < 5) {
+            Social social = new Social(title, id);
+            socials[socialCount++] = social;
+            return social;
+        }
+        return null;
+    }
+
+    public ContactInfo[] getInfo() {
+        int size = 1 + (phoneNumber != null ? 1 : 0) + emailCount + socialCount;
+        ContactInfo[] infoArray = new ContactInfo[size];
+        int index = 0;
+        infoArray[index++] = nameContactInfo;
+        if (phoneNumber != null) {
+            infoArray[index++] = phoneNumber;
+        }
+        for (int i = 0; i < emailCount; i++) {
+            infoArray[index++] = emails[i];
+        }
+        for (int i = 0; i < socialCount; i++) {
+            infoArray[index++] = socials[i];
+        }
+        return infoArray;
+    }
+
+    // ContactInfo interface
+    public interface ContactInfo {
+        String getTitle();
+        String getValue();
+    }
+
+    // Nested NameContactInfo class
+    private class NameContactInfo implements ContactInfo {
+        @Override
+        public String getTitle() {
+            return "Name";
+        }
+
+        @Override
+        public String getValue() {
+            return name;
+        }
+    }
+
+    // Nested Email class
+    public static class Email implements ContactInfo {
+        private final String value;
+
+        public Email(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String getTitle() {
+            return "Email";
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+    }
+
+    // Nested Social class
+    public static class Social implements ContactInfo {
+        private final String title;
+        private final String value;
+
+        public Social(String title, String value) {
+            this.title = title;
+            this.value = value;
+        }
+
+        @Override
+        public String getTitle() {
+            return title;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public static void main(String[] args) {
+        Contact contact = new Contact("John Doe");
+
+        contact.addEmail("john", "doe.com");
+        contact.addEpamEmail("john", "doe");
+        contact.addPhoneNumber(44, "123 456-78-90");
+        contact.addTwitter("john_doe");
+        contact.addInstagram("john_doe_insta");
+        contact.addSocialMedia("LinkedIn", "john_doe_linkedin");
+
+        ContactInfo[] infoArray = contact.getInfo();
+        for (ContactInfo info : infoArray) {
+            System.out.println(info.getTitle() + ": " + info.getValue());
+        }
+    }
+}
